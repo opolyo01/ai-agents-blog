@@ -57,6 +57,7 @@ a {
 }
 
 .code-block,
+.plain-block,
 .diagram-shell,
 .diagram-fallback {
   border-color: var(--border);
@@ -67,6 +68,19 @@ a {
   border-bottom: 1px solid var(--border);
   background: var(--surface);
   color: #6b5b45;
+}
+
+.plain-block {
+  color: #44403c;
+  font-size: 0.98rem;
+  line-height: 1.9;
+}
+
+.plain-block code {
+  background: transparent;
+  border: 0;
+  padding: 0;
+  font-size: inherit;
 }
 
 .diagram-shell svg {

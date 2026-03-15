@@ -33,6 +33,16 @@ export default function Markdown({ content }: MarkdownProps) {
             return <MermaidDiagram chart={code} />;
           }
 
+          if (language === "text" || language === "plaintext") {
+            return (
+              <pre className="plain-block my-6 overflow-x-auto rounded-2xl border px-6 py-5">
+                <code className={className} {...props}>
+                  {code}
+                </code>
+              </pre>
+            );
+          }
+
           return (
             <div className="code-block my-6 overflow-hidden rounded-2xl border">
               <div className="code-block-header px-4 py-2 text-xs font-medium uppercase tracking-[0.24em]">

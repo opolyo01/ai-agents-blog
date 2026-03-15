@@ -49,9 +49,10 @@ export function getPostBySlug(slug: string) {
 function stripDuplicateTitleHeading(content: string, title: string) {
   const normalizedTitle = title.trim();
   const lines = content.split("\n");
+  const firstContentLineIndex = lines.findIndex((line) => line.trim().length > 0);
 
-  if (lines[0]?.trim() === `# ${normalizedTitle}`) {
-    return lines.slice(1).join("\n").replace(/^\n+/, "");
+  if (firstContentLineIndex !== -1 && lines[firstContentLineIndex]?.trim() === `# ${normalizedTitle}`) {
+    return lines.slice(firstContentLineIndex + 1).join("\n").replace(/^\n+/, "");
   }
 
   return content;
