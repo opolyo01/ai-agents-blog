@@ -50,6 +50,12 @@ That is what makes skills much more durable than ad hoc prompting.
 | Context | Always active, consuming tokens | Loaded only when relevant |
 | Best for | Ad hoc requests and immediate context | Standardized reviews, reports, analysis, workflows |
 
+## The architectural shift
+
+![Diagram showing the shift from mega-prompts to modular agent skills](/Gemini_Generated_Image_sltvqsltvqsltvqs.png)
+
+The difference is structural. A prompt-only system tries to carry everything all the time, while a skill-based system loads the right capability only when the task requires it.
+
 ## Why progressive disclosure matters
 
 The real power of skills comes from how they are loaded.
