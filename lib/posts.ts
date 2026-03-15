@@ -38,9 +38,21 @@ export function getPostBySlug(slug: string) {
   const fullPath = path.join(postsDirectory, `${slug}.md`);
   const fileContents = fs.readFileSync(fullPath, "utf8");
   const { data, content } = matter(fileContents);
+  const meta = data as PostMeta;
 
   return {
-    meta: data as PostMeta,
-    content,
+    meta,
+    content: stripDuplicateTitleHeading(content, meta.title),
   };
+}
+
+function stripDuplicateTitleHeading(content: string, title: string) {
+  const normalizedTitle = title.trim();
+  const lines = content.split("\n");
+
+  if (lines[0]?.trim() === `# ${normalizedTitle}`) {
+    return lines.slice(1).join("\n").replace(/^\n+/, "");
+  }
+
+  return content;
 }
