@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getAllPosts } from "@/lib/posts";
+import { siteConfig } from "@/lib/site";
 
 export default function HomePage() {
   const posts = getAllPosts();
@@ -7,6 +8,7 @@ export default function HomePage() {
   return (
     <main className="mx-auto max-w-3xl px-6 py-16">
       <h1 className="text-4xl font-bold tracking-tight">Agent Engineering Notes</h1>
+      <p className="mt-2 text-sm text-gray-500">By {siteConfig.author}</p>
       <p className="mt-3 text-lg text-gray-600">
         Notes on AI agents, MCP, context files, skills, and developer tooling.
       </p>

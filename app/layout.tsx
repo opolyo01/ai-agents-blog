@@ -9,6 +9,8 @@ export const metadata: Metadata = {
     default: siteConfig.seoTitle,
     template: `%s | ${siteConfig.name}`,
   },
+  authors: [{ name: siteConfig.author, url: siteConfig.linkedin }],
+  creator: siteConfig.author,
   description: siteConfig.description,
   alternates: {
     types: {
