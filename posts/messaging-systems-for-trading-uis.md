@@ -1,232 +1,381 @@
 ---
-title: "Messaging Systems for Trading UIs: Kafka vs kdb+, Solace, and AMPS"
+title: "Kafka vs kdb+ vs Solace vs AMPS for Trading UIs"
 date: "2026-03-16"
 slug: "messaging-systems-for-trading-uis"
-summary: "How Kafka, kdb+, Solace, and AMPS fit together when building low-latency trading UIs."
+summary: "How Kafka, kdb+, Solace, and AMPS fit together when building low-latency trading UIs with snapshots, streaming updates, and replay."
 ---
 
-In trading systems, the choice of messaging and data infrastructure directly affects latency, reliability, and developer experience, especially when you are building user-facing tools like blotters, order entry systems, and real-time dashboards.
+Trading UIs look simple on the surface.
 
-This is a comparison of four technologies that show up often in trading environments:
+A blotter, an order entry screen, or a positions dashboard is just a table with live data until you actually have to build one.
 
-- Kafka
-- kdb+
-- Solace
-- AMPS
+Then the real requirements show up:
 
-The useful question is not which one is best in isolation.
+- lots of subscribers
+- per-user entitlements
+- late joiners who need current state immediately
+- continuous updates without crushing the browser
+- replay when something goes wrong
 
-The useful question is how they are typically used together to power trading UIs.
+That is why most serious trading environments end up with a two-layer design:
 
-## The core problem
+- a durable event backbone
+- a UI-facing distribution layer
 
-Trading UIs have to satisfy several hard requirements at the same time:
+This is where Kafka, kdb+, Solace, and AMPS usually land.
 
-- **Low-latency updates** for market data, fills, positions, and order status
-- **High throughput** when thousands of updates are moving through the system
-- **Replayability** when someone asks what happened five minutes ago
-- **Consistency** between backend state and what the UI is showing
-- **Fan-out** to multiple consumers, including users, services, and downstream systems
+## Executive summary
 
-No single technology solves all of that perfectly.
+The short version:
 
-That is why most serious trading stacks end up combining multiple systems instead of betting on one.
+- **Kafka** is best thought of as the durable event backbone.
+- **kdb+** is the time-series and analytics engine.
+- **Solace** is a UI-friendly event distribution layer with strong topic routing.
+- **AMPS** is a high-performance pub/sub system with a very strong current-state model for live views.
 
-## Kafka: the backbone, not the UI pipe
+If you try to use one of them for everything, you usually end up fighting the product.
 
-Kafka is usually the durable event backbone.
+## The core UI problem
 
-It works well for:
+Trading UIs need to solve several hard things at the same time:
 
+- **Low latency** for fills, market data, positions, and order state
+- **High throughput** when updates spike
+- **Replayability** when someone needs to reconstruct what happened
+- **Current state** for late joiners
+- **Fine-grained filtering** by trader, book, account, or symbol
+- **Fan-out** to many users and systems at once
+
+Those requirements pull in different directions.
+
+Durable logs are good at replay.
+Pub/sub brokers are good at distribution.
+Time-series engines are good at history and analytics.
+
+Most funds end up using more than one.
+
+## Comparison at a glance
+
+| System | What it is | Best at | Usually weak at |
+| --- | --- | --- | --- |
+| Kafka | Durable distributed log | Replay, audit, cross-service fan-out, recovery | Browser-facing subscriptions, UI snapshots, fine-grained user filtering |
+| kdb+ | Real-time + historical time-series engine | Tick storage, historical queries, analytics, replay tools | Acting as the main UI distribution bus |
+| Solace | Topic-based event broker | Low-latency fan-out, routing, filtering, browser/mobile delivery | Being your historical analytics layer |
+| AMPS | High-performance pub/sub + current-state server | Live views, stateful subscriptions, delta updates, replay | Broad ecosystem/tooling compared to Kafka |
+
+That table is the practical version.
+
+The chart below is intentionally qualitative. Exact placement depends on deployment choices, durability settings, batching, and gateway design.
+
+```mermaid
+quadrantChart
+  title Latency vs Throughput (qualitative)
+  x-axis Lower latency --> Higher latency
+  y-axis Lower throughput --> Higher throughput
+  quadrant-1 Ultra-low latency / moderate throughput
+  quadrant-2 Ultra-low latency / high throughput
+  quadrant-3 Higher latency / lower throughput
+  quadrant-4 Higher latency / high throughput
+  AMPS: [0.20, 0.75]
+  "Solace PubSub+": [0.25, 0.80]
+  "kdb+ (tick pub/sub)": [0.40, 0.55]
+  Kafka: [0.70, 0.90]
+```
+
+## Kafka: the backbone
+
+Kafka is excellent when the problem is:
+
+- keep events durably
+- replicate them
+- let many consumers process them independently
+- allow consumers to rewind and reprocess
+
+That maps well to:
+
+- order lifecycle events
 - trade events
-- order lifecycle tracking
 - audit logs
-- cross-service communication
-- replay and recovery
+- risk pipelines
+- downstream analytics
 
-Where it is weaker:
+The consumer-offset model is a big part of why Kafka works so well as a backbone. Consumers control progress and can resume or replay from known positions.
 
-- ultra-low-latency UI updates
-- fine-grained subscriptions by symbol, trader, or account
-- direct browser-facing streaming
+Where Kafka is less natural for trading UIs:
 
-Typical pattern:
+- the UI usually wants current state, not just an event stream
+- browsers do not speak Kafka directly
+- per-user topic shaping and entitlement mapping are not really the product's core strength
 
-```text
-Exchange -> Trading System -> Kafka -> Consumers
-```
+That is why Kafka is usually behind the scenes rather than directly attached to the frontend.
 
-Where those consumers might include risk services, analytics pipelines, storage, or reconciliation systems.
+## kdb+: the analytics and replay layer
 
-Kafka is incredibly valuable in trading architecture, but in most firms it is not the thing wired directly into the trading UI.
+kdb+ solves a different problem.
 
-## kdb+: the time-series and analytics layer
+It is extremely strong for:
 
-kdb+ is still the default answer in many trading environments for time-series data and historical analysis.
-
-It is strong at:
-
-- historical queries
-- tick, trade, and quote analysis
-- combining real-time and historical views
-- quant workflows
-- replay and post-trade analysis
-
-In UI terms, this usually shows up in:
-
-- charting
-- historical views
+- tick storage
+- real-time and historical query combinations
 - replay tools
-- PnL analysis
+- charts
+- PnL and microstructure analysis
 
-The important distinction is that kdb+ is not really a pub/sub system. It is a query engine and storage layer.
+Its classic architecture around tickerplant, RDB, and HDB is still one of the cleanest models for market-data capture and time-series analysis.
 
-That makes it complementary to the messaging layer, not a replacement for it.
+It is also important that the tickerplant logs data for recovery and can replay state into downstream processes.
 
-## Solace: real-time event distribution
+For UI work, kdb+ is often the thing behind:
 
-Solace is built much closer to the UI distribution problem.
+- charts
+- historical views
+- intraday analysis
+- replay and diagnostics
 
-It is strong at:
+It is not usually the best standalone answer for "how do I distribute live updates to thousands of browser sessions."
 
-- topic-based subscriptions such as `orders.AAPL.*`
-- low-latency fan-out
-- fine-grained filtering
-- enterprise-grade routing and delivery
+Even KX's own guidance acknowledges that GUI clients often should not get raw update rates directly, and chained tickerplants are a common way to bulk or throttle updates for UI consumption.
 
-Typical usage:
+## Solace: the UI-facing event bus
 
-- market data distribution
-- order updates to UIs
-- risk updates
-- multi-region event routing
+Solace fits much closer to the real-time frontend problem.
 
-Why teams like it:
+Why:
 
-- it fits real-time UI feeds well
-- the subscription model is usually more natural than Kafka for user-facing consumers
-- routing is a first-class part of the system instead of something you build around it
+- hierarchical topics
+- wildcard subscriptions
+- dynamic filtering
+- built-in WebSocket support for browser clients
+- direct vs guaranteed delivery modes
+- broker-side features for slow consumers and throttling
 
-In a lot of trading environments, Solace ends up being much closer to the UI-facing messaging layer.
+That combination is very useful for trading UIs where one user needs:
 
-## AMPS: high-performance pub/sub for live views
+- `orders.trader123.*`
+- `marketdata.us.equities.aapl`
+- `risk.book.alpha`
 
-AMPS solves a similar class of problem, but with a very UI-friendly model.
+and another user should only see a different slice of the same event universe.
 
-It is strong at:
+Solace's capital-markets UI guidance is pretty explicit here: HTML5 UIs usually want WebSockets, fan-out, filtering, caching, and strong entitlement control. That is much closer to the frontend problem than a raw Kafka topic is.
 
-- extremely fast pub/sub
-- stateful subscriptions
-- delta updates
-- efficient client delivery
+Two Solace concepts matter a lot for UI design:
 
-One of the most attractive AMPS features for UI work is SOW, or State of the World.
+- **Direct messaging** for very fast data where occasional loss is acceptable
+- **Guaranteed messaging** for higher-value messages like orders and confirmations
 
-That gives you a pattern like:
+That split maps nicely to trading:
+
+- market data can often tolerate drop-and-replace behavior
+- fills, cancels, rejects, and order acknowledgements usually cannot
+
+## AMPS: pub/sub plus current state
+
+AMPS is attractive for trading UIs because it combines several things that frontends need in one place:
+
+- fast pub/sub
+- current state tracking
+- transaction-log replay
+- content filtering
+- WebSocket-capable JavaScript clients
+
+The most important feature for UI work is SOW, or State of the World.
+
+That gives you a very natural frontend pattern:
 
 ```text
-Give me current state + stream updates
+give me current state
++ subscribe me for updates
 ```
 
-in a single subscription.
+That is close to exactly what a blotter needs.
 
-That is exactly what you want for:
+A user opens the screen and wants:
 
-- trading blotters
+- current open orders
+- then incremental updates
+
+not:
+
+- replay every event since the morning
+- reconstruct state in the browser
+
+AMPS is unusually direct about this use case. SOW keeps current values by key, while the transaction log preserves the full publish history for replay and recovery.
+
+That is why AMPS often feels more native for live UI views than Kafka does.
+
+## The common hedge fund pattern
+
+This is the architecture pattern that shows up over and over:
+
+```mermaid
+flowchart LR
+    OMS["OMS / EMS / execution systems"] --> Kafka["Kafka backbone"]
+    Risk["Risk and analytics services"] --> Kafka
+    Feeds["Market data feeds"] --> Kafka
+
+    Kafka --> KDB["kdb+ for time-series and analytics"]
+    Kafka --> Dist["Solace or AMPS for real-time distribution"]
+
+    Dist --> Gateway["UI gateway"]
+    Gateway --> UI["Trading UI"]
+```
+
+Why it works:
+
+- Kafka handles durability and replay
+- kdb+ handles history and analytics
+- Solace or AMPS handles frontend distribution
+
+This is usually cleaner than trying to make one product cover all three concerns.
+
+## Snapshot plus stream is the real UI contract
+
+The most important pattern in a trading UI is not just streaming.
+
+It is:
+
+1. get the current state
+2. then subscribe to deltas
+
+That is the real contract for:
+
+- blotters
 - order books
-- live dashboards
-- position views
+- positions views
+- risk dashboards
 
-For UI engineering, that is a very strong fit.
+Solace addresses that with cache or last-value style patterns.
+AMPS addresses it very directly with SOW plus subscription.
+Kafka can approximate parts of it with compacted topics plus application state, but it is not as naturally UI-shaped.
+kdb+ can provide the snapshot via query, but you still need a good streaming path on top.
 
-## What hedge funds usually do
+## Gateway design matters
 
-In practice, firms rarely choose only one of these systems.
-
-A common pattern looks like this:
-
-```text
-Execution systems -> Kafka
-
-Kafka ->
-    -> kdb+ for storage and analytics
-    -> Solace or AMPS for real-time distribution
-
-Solace or AMPS ->
-    -> Trading UI
-```
-
-That separation works because each system is doing the part it is best at:
-
-- Kafka for durability and replay
-- kdb+ for analytics and history
-- Solace or AMPS for real-time delivery
-
-## Connecting the UI
-
-One common mistake is trying to connect the UI directly to Kafka.
+The UI should almost never talk directly to the backbone.
 
 A better pattern is:
 
-```text
-UI -> WebSocket -> Gateway -> Solace or AMPS
+```mermaid
+flowchart LR
+    UI["Browser UI"] --> WS["WebSocket gateway"]
+    WS --> Bus["Solace or AMPS"]
+    WS --> Cache["Snapshot source"]
 ```
 
-That gateway layer usually handles:
+That gateway usually owns:
 
 - authentication
-- subscription management
-- filtering by trader, symbol, or account
-- permission checks
+- entitlement checks
+- subscription mapping
+- backpressure
+- coalescing
 - protocol translation
 
-This is the part that keeps the UI fast without exposing backend messaging systems directly to the browser.
+This is where a lot of frontend reliability gets won or lost.
 
-## What blotters and order entry systems actually need
+For example:
 
-For a trading UI, the requirements are usually pretty concrete:
+- market data can be coalesced aggressively
+- fills and cancels usually should not be dropped
+- entitlement logic should live here, not in the browser
 
-1. **Initial snapshot**
-   Current orders, positions, or book state.
+If you skip this layer, the UI gets brittle fast.
 
-2. **Streaming updates**
-   Fills, market data, order status changes, and risk signals.
+## What blotters and order entry screens actually need
 
-3. **Filtering**
-   By trader, account, book, venue, or symbol.
+These systems tend to need four things:
 
-4. **Low latency**
-   Ideally sub-100ms end to end, and often tighter depending on the use case.
+### 1. Initial snapshot
 
-That combination is why stateful pub/sub systems are often a better fit for the frontend-facing layer than an append-only event log.
+Current orders, latest state, and maybe current positions.
 
-## Best practical setup
+### 2. Continuous deltas
 
-If I were designing this today, I would think about it in two broad modes.
+Fills, status changes, market updates, and risk signals.
 
-### Option A: enterprise or hedge fund stack
+### 3. Fine-grained filtering
 
-- Kafka for the backbone
+By trader, book, symbol, venue, client, or account.
+
+### 4. Human-rate delivery
+
+The backend might see thousands of updates per second.
+The human should see what matters, at a rate the UI can actually render.
+
+This is where Solace features like slow-consumer handling and message eliding matter.
+It is also where kdb+ chained tickerplants and gateway-side batching make sense.
+
+## A more practical way to choose
+
+If you are deciding what to use, the question is usually not "which product wins?"
+
+It is "which layer am I solving?"
+
+### Use Kafka when:
+
+- replay matters
+- many downstream services need the same event stream
+- you want durable logs and consumer-controlled offsets
+
+### Use kdb+ when:
+
+- you need tick storage
+- historical + intraday analysis is central
+- charts, replay, and analytics matter as much as live delivery
+
+### Use Solace when:
+
+- topic-based routing and entitlements matter
+- the UI is a first-class consumer
+- you need browser/mobile-friendly real-time distribution
+
+### Use AMPS when:
+
+- the UI wants current state plus stream in one model
+- stateful subscriptions are central
+- you want pub/sub and current-state storage tightly coupled
+
+## If I were building this today
+
+I would think in three tiers.
+
+### Small team
+
+- Kafka
+- WebSocket gateway
+- Redis or app-managed snapshot state
+- ClickHouse, Timescale, or kdb+ if historical analytics matter
+
+### Mid-sized trading platform
+
+- Kafka backbone
+- kdb+ for time-series and replay
 - Solace or AMPS for UI distribution
-- kdb+ for analytics and history
+- explicit gateway for auth, entitlements, and throttling
 
-### Option B: lighter modern stack
+### Large multi-asset environment
 
-- Kafka for the backbone
-- WebSocket gateway with in-memory caching for UI delivery
-- ClickHouse or Timescale for historical analysis
-
-That second setup is more accessible, but the architectural separation is still the same.
+- Kafka for the durable backbone
+- kdb+ for storage and analytics
+- Solace or AMPS for frontend distribution
+- dedicated subscription managers, entitlement services, and broker-level ACLs
 
 ## The key insight
 
 Kafka is a log.
 
+kdb+ is a time-series engine.
+
 Solace and AMPS are distribution systems.
 
-kdb+ is a query engine.
+Trading UIs usually need all three classes of behavior:
 
-Trying to force one of them to do all three jobs usually creates pain somewhere else in the system.
+- history
+- state
+- streaming
+
+Trying to force one product to be all of them usually creates pain somewhere else in the stack.
 
 ## Closing
 
@@ -236,6 +385,6 @@ The best trading platforms separate concerns cleanly:
 - analytics
 - distribution
 
-Then they put a thin, controlled layer between backend systems and the UI.
+Then they put a thin controlled layer between those backend systems and the UI.
 
-That separation is what keeps trading UIs fast, consistent, and scalable under real-world load.
+That is usually what keeps the frontend fast, the backend sane, and the entire platform recoverable under real-world load.
