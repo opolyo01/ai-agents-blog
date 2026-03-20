@@ -64,6 +64,24 @@ export default async function PostPage({ params }: Props) {
       <article className="prose prose-lg prose-zinc mt-10 max-w-none">
         <Markdown content={post.content} />
       </article>
+
+      <section className="mt-12 rounded-3xl border border-gray-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] px-6 py-6">
+        <p className="text-sm font-medium uppercase tracking-[0.24em] text-gray-500">
+          Feedback
+        </p>
+        <p className="mt-3 text-lg leading-8 text-gray-700">
+          Working on something similar? Reach out or share your take on{" "}
+          <a
+            href={siteConfig.linkedin}
+            target="_blank"
+            rel="noreferrer"
+            className="font-medium text-[#9a3412] underline decoration-gray-300 underline-offset-4 transition-colors hover:text-[#7c2d12]"
+          >
+            LinkedIn
+          </a>
+          .
+        </p>
+      </section>
     </main>
   );
 }
