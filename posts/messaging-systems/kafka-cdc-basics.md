@@ -1,3 +1,10 @@
+---
+title: "Kafka CDC Basics: WAL, Debezium, CDC, and Avro"
+date: "2026-03-16"
+slug: "kafka-cdc-basics"
+summary: "A simple guide to the core building blocks behind Postgres-to-Kafka CDC pipelines."
+---
+
 # Kafka CDC Basics: WAL, Debezium, CDC, Avro
 
 This guide explains the core concepts behind a real-time data pipeline using Postgres and Kafka.
