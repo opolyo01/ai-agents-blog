@@ -2,12 +2,15 @@
 @plugin "@tailwindcss/typography";
 
 :root {
+  color-scheme: light dark;
   --background: #ffffff;
   --foreground: #171717;
   --surface: #f5f1e8;
   --surface-strong: #ebe3d1;
   --border: #d8cdb8;
   --accent: #9a3412;
+  --muted: #5b6474;
+  --muted-strong: #3f4754;
 }
 
 @theme inline {
@@ -21,6 +24,12 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    --surface: #171717;
+    --surface-strong: #232323;
+    --border: #353535;
+    --accent: #fb923c;
+    --muted: #a0a7b4;
+    --muted-strong: #d0d4db;
   }
 }
 
@@ -28,6 +37,9 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: "Helvetica Neue", Arial, sans-serif;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -61,17 +73,17 @@ a {
 .diagram-shell,
 .diagram-fallback {
   border-color: var(--border);
-  background: linear-gradient(180deg, #fffdfa 0%, #f8f3ea 100%);
+  background: linear-gradient(180deg, var(--surface) 0%, color-mix(in srgb, var(--surface) 74%, var(--background) 26%) 100%);
 }
 
 .code-block-header {
   border-bottom: 1px solid var(--border);
-  background: var(--surface);
-  color: #6b5b45;
+  background: var(--surface-strong);
+  color: var(--muted);
 }
 
 .plain-block {
-  color: #44403c;
+  color: var(--muted-strong);
   font-size: 0.98rem;
   line-height: 1.9;
 }
@@ -88,4 +100,12 @@ a {
   margin: 0 auto;
   max-width: 100%;
   height: auto;
+}
+
+.topic-disclosure > summary {
+  list-style: none;
+}
+
+.topic-disclosure > summary::-webkit-details-marker {
+  display: none;
 }

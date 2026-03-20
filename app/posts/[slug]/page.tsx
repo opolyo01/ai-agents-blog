@@ -55,27 +55,32 @@ export default async function PostPage({ params }: Props) {
   const post = getPostBySlug(slug);
 
   return (
-    <main className="mx-auto max-w-3xl px-6 py-16">
-      <h1 className="text-4xl font-bold tracking-tight">{post.meta.title}</h1>
-      <p className="mt-2 text-sm text-gray-500">
+    <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6 sm:py-16">
+      <p className="inline-flex rounded-full border border-gray-200 px-3 py-1 text-xs font-medium uppercase tracking-[0.22em] text-gray-500 dark:border-white/10 dark:text-gray-400">
+        {post.meta.category}
+      </p>
+      <h1 className="mt-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+        {post.meta.title}
+      </h1>
+      <p className="mt-2 text-sm text-gray-500 dark:text-gray-400">
         <time dateTime={post.meta.date}>{post.meta.date}</time>
       </p>
 
-      <article className="prose prose-lg prose-zinc mt-10 max-w-none">
+      <article className="prose prose-base prose-zinc mt-8 max-w-none dark:prose-invert sm:prose-lg">
         <Markdown content={post.content} />
       </article>
 
-      <section className="mt-12 rounded-3xl border border-gray-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] px-6 py-6">
-        <p className="text-sm font-medium uppercase tracking-[0.24em] text-gray-500">
+      <section className="mt-10 rounded-3xl border border-gray-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] px-5 py-5 dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.02)_100%)] sm:mt-12 sm:px-6 sm:py-6">
+        <p className="text-sm font-medium uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
           Feedback
         </p>
-        <p className="mt-3 text-lg leading-8 text-gray-700">
+        <p className="mt-3 text-lg leading-8 text-gray-700 dark:text-gray-200">
           Working on something similar? Reach out or share your take on{" "}
           <a
             href={siteConfig.linkedin}
             target="_blank"
             rel="noreferrer"
-            className="font-medium text-[#9a3412] underline decoration-gray-300 underline-offset-4 transition-colors hover:text-[#7c2d12]"
+            className="font-medium text-[#9a3412] underline decoration-gray-300 underline-offset-4 transition-colors hover:text-[#7c2d12] dark:text-orange-300 dark:decoration-white/20 dark:hover:text-orange-200"
           >
             LinkedIn
           </a>
