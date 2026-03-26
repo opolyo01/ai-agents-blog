@@ -118,6 +118,8 @@ Instead of explaining your project setup, coding conventions, or preferences at 
 
 This prevents you from burning tokens repeating yourself across sessions. You write it once; Claude reads it once per session as part of its startup context.
 
+A minimal example for a TypeScript project:
+
 ```markdown
 # CLAUDE.md
 
@@ -135,6 +137,103 @@ This prevents you from burning tokens repeating yourself across sessions. You wr
 - Modify package.json without asking
 - Use any or unknown types
 ```
+
+#### Real-World Example: Financial Document Parser
+
+Here's a more complete `CLAUDE.md` for a project that parses Google Docs containing income and expense data — a great example of how much context you can offload out of the conversation:
+
+```markdown
+# CLAUDE.md — Google Docs Financial Parser
+
+## Project Purpose
+Parse 4 Google Docs (Q1–Q4 expense/income reports), extract transactions,
+group them by category, and produce a structured summary — while preserving
+every individual transaction under its category (no collapsing or deduplication).
+
+## Source Documents
+- `docs/q1-2026.txt` — Q1 income and expenses (exported from Google Docs)
+- `docs/q2-2026.txt` — Q2 income and expenses
+- `docs/q3-2026.txt` — Q3 income and expenses
+- `docs/q4-2026.txt` — Q4 income and expenses
+
+Parse all four in sequence. Do NOT load all four into context at once.
+Process one file, emit output, then move to the next.
+
+## Transaction Format (Input)
+Each line in a source doc follows one of these patterns:
+  DATE | DESCRIPTION | AMOUNT | TYPE
+  DATE | DESCRIPTION | AMOUNT (positive = income, negative = expense)
+
+Dates are in MM/DD/YYYY format. Amounts may include $ signs and commas.
+
+## Categories
+Group every transaction into exactly one of these categories:
+- Payroll
+- Contractors
+- Software & Subscriptions
+- Office & Supplies
+- Travel & Meals
+- Marketing
+- Revenue - Product
+- Revenue - Services
+- Tax & Compliance
+- Miscellaneous
+
+If a transaction cannot be classified, place it in Miscellaneous and
+flag it with a `[REVIEW]` tag so it can be checked manually.
+
+## Output Format
+Produce a Markdown report with this structure for EACH document processed:
+
+### [Quarter] Financial Report
+
+#### Summary Table
+| Category | Total Income | Total Expenses | Net |
+|---|---|---|---|
+| Payroll | $0 | $12,000 | -$12,000 |
+...
+| **TOTAL** | **$X** | **$Y** | **$Z** |
+
+#### Transactions by Category
+
+##### Payroll
+| Date | Description | Amount | Type |
+|---|---|---|---|
+| 01/15/2026 | Salary - Alice | -$6,000 | Expense |
+| 01/15/2026 | Salary - Bob | -$6,000 | Expense |
+
+##### Revenue - Product
+| Date | Description | Amount | Type |
+|---|---|---|---|
+| 01/03/2026 | Stripe payout | +$4,200 | Income |
+
+[...all other categories with their transactions...]
+
+IMPORTANT: Always list every individual transaction under its category.
+Never roll up or collapse transactions into a single row per category in
+the transactions section. The summary table is the only place that aggregates.
+
+## Processing Rules
+1. One file at a time — process docs/q1-2026.txt fully before reading q2
+2. Output the full Markdown report for each quarter before moving to the next
+3. After all four quarters, produce a combined annual summary table (summary only, no repeated transactions)
+4. Flag any line that doesn't match the expected format with [PARSE ERROR]
+5. Amounts: normalize to plain numbers (remove $, commas). Store as negative for expenses, positive for income.
+
+## Do Not
+- Load all 4 source files into context simultaneously
+- Deduplicate transactions that happen to have the same amount/date
+- Omit the transactions table for any category that has entries
+- Round amounts — preserve cents
+- Ask clarifying questions mid-parse — use the rules above and flag unknowns with [REVIEW]
+
+## Token Efficiency Notes
+- After finishing each quarter's report, use /clear before processing the next quarter
+- If a source file exceeds 500 lines, ask the user to split it before proceeding
+- Emit the summary table first, then the transaction tables — allows early review
+```
+
+This `CLAUDE.md` eliminates virtually every clarifying question Claude might ask at the start of a session. Category rules, output format, processing order, edge case handling — it's all defined once. The result is that each session starts executing immediately rather than spending the first several turns establishing context.
 
 ### Scope Your Tool Access
 
