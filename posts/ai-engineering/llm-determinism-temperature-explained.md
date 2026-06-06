@@ -6,8 +6,6 @@ summary: "Temperature is just the start. Here is every source of non-determinism
 category: "AI Engineering"
 ---
 
-# Why the Same Prompt Gives Different Results
-
 You send the same prompt twice. You get two different answers.
 
 This is not a bug. It is by design. But if you are building a production system — a fraud classifier, a document parser, a structured data extractor — non-determinism is a problem you need to understand and control.
