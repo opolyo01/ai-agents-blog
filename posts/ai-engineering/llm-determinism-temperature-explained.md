@@ -18,33 +18,25 @@ Here is everything you need to know.
 
 Every LLM generates text one token at a time. At each step, the model produces a probability distribution over its entire vocabulary — tens of thousands of possible next tokens. Temperature controls how you sample from that distribution.
 
-```
-temperature = 0    → always pick the highest probability token
-                     same input = same output every time
+| Temperature | Behavior |
+|---|---|
+| `0` | Always picks the highest probability token — same input, same output every time |
+| `0.7` | Most LLM API defaults — some randomness, some consistency |
+| `1` | Samples proportionally from the distribution — same input, different output each time |
+| `2` | Flattens the distribution almost to uniform — nearly random output |
 
-temperature = 1    → sample proportionally from the distribution
-                     same input = different output each time
+Concretely, given token probabilities for the next word after `"The payment is"`:
 
-temperature = 0.7  → most LLM API defaults
-                     some randomness, some consistency
+| Token | Probability |
+|---|---|
+| `"approved"` | 0.72 |
+| `"pending"` | 0.18 |
+| `"declined"` | 0.07 |
+| `"complete"` | 0.03 |
 
-temperature = 2    → flatten the distribution almost to uniform
-                     nearly random output
-```
-
-Concretely:
-
-```
-Token probabilities for next word after "The payment is":
-  "approved"  → 0.72
-  "pending"   → 0.18
-  "declined"  → 0.07
-  "complete"  → 0.03
-
-temperature=0    → always "approved"
-temperature=1    → "approved" ~72% of the time, others occasionally
-temperature=2    → all four nearly equally likely
-```
+- **temperature=0** → always `"approved"`
+- **temperature=1** → `"approved"` ~72% of the time, others occasionally
+- **temperature=2** → all four nearly equally likely
 
 The math: divide each logit by temperature before applying softmax. Low temperature sharpens the peak. High temperature flattens it.
 
