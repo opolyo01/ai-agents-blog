@@ -1,6 +1,7 @@
 ---
 title: "Spark for Full Stack Engineers: ML Data Pipelines from First Principles"
 date: "2026-06-06"
+slug: "spark-for-full-stack-engineers"
 summary: "If you filter, map, and reduce data in JavaScript every day, you already understand Spark DataFrames. Here is what changes when you move from UI data wrangling to distributed ML pipelines."
 category: "Data Engineering"
 ---
@@ -15,15 +16,13 @@ The mental model is identical. The scale is just different.
 
 # 1. The Same Operations, Three Runtimes
 
-```
-JavaScript (UI)           Pandas (single machine)      Spark (distributed)
-─────────────────         ─────────────────────        ─────────────────────
-array.filter(fn)          df[df.age > 30]              df.filter(col('age') > 30)
-array.map(fn)             df['col'] = df['a'] * 2      df.withColumn('col', col('a') * 2)
-array.reduce(fn)          df.groupby().sum()            df.groupBy().agg(sum())
-[...a, ...b]              pd.concat([a, b])             a.union(b)
-a.forEach(print)          df.head()                     df.show()
-```
+| JavaScript (UI) | Pandas (single machine) | Spark (distributed) |
+|---|---|---|
+| `array.filter(fn)` | `df[df.age > 30]` | `df.filter(col('age') > 30)` |
+| `array.map(fn)` | `df['col'] = df['a'] * 2` | `df.withColumn('col', col('a') * 2)` |
+| `array.reduce(fn)` | `df.groupby().sum()` | `df.groupBy().agg(sum())` |
+| `[...a, ...b]` | `pd.concat([a, b])` | `a.union(b)` |
+| `a.forEach(print)` | `df.head()` | `df.show()` |
 
 Same concepts. Different APIs. Different scale.
 
@@ -430,42 +429,47 @@ df.select('age', 'salary', 'tenure').describe().show()
 
 # 12. Cheat Sheet
 
-```
-SPARK CORE CONCEPTS
-───────────────────
-DataFrame      distributed table, same API as pandas
-Transformation lazy operation — builds a plan (filter, select, withColumn, join)
-Action         executes the plan (show, count, collect, write)
-Partition      chunk of data on one node — more partitions = more parallelism
-Catalyst       Spark's query optimizer — rewrites plan for efficiency
-Parquet        columnar binary format — use this instead of CSV in production
+**Spark core concepts**
 
-SPARK VS PANDAS
-───────────────
-pandas         single machine, fast for small/medium data, rich ecosystem
-Spark          distributed, handles data that exceeds RAM, same patterns at scale
+| Term | Meaning |
+|---|---|
+| `DataFrame` | Distributed table, same API as pandas |
+| `Transformation` | Lazy operation — builds a plan (`filter`, `select`, `withColumn`, `join`) |
+| `Action` | Executes the plan (`show`, `count`, `collect`, `write`) |
+| `Partition` | Chunk of data on one node — more partitions = more parallelism |
+| `Catalyst` | Spark's query optimizer — rewrites plan for efficiency |
+| `Parquet` | Columnar binary format — use this instead of CSV in production |
 
-KEY OPERATIONS MAPPING
-──────────────────────
-JS .filter()           → df.filter(col('x') > 5)
-JS .map()              → df.withColumn('new', col('x') * 2)
-JS .reduce()           → df.groupBy('key').agg(sum('val'))
-JS spread/concat       → a.union(b)
-JS console.log         → df.show()
-SQL WHERE              → df.filter()
-SQL SELECT             → df.select()
-SQL GROUP BY           → df.groupBy().agg()
-SQL JOIN               → df.join(other, on='id', how='left')
-SQL ORDER BY           → df.orderBy(col('x').desc())
+**Spark vs Pandas**
 
-COMMON GOTCHAS
-──────────────
-Nothing runs until an action fires — this surprises everyone at first
-collect() pulls all data to the driver — never do this on large datasets
-Joins are expensive — broadcast small DataFrames with F.broadcast(small_df)
-Repartition before writing to control output file count
-inferSchema reads the whole file to guess types — use explicit schema in prod
-```
+| | Pandas | Spark |
+|---|---|---|
+| Scale | Single machine, fits in RAM | Distributed cluster, larger than RAM |
+| Speed | Fast for small/medium data | Optimized for big data |
+| API | Rich ecosystem, interactive | Same patterns, production-ready |
+
+**Operations mapping**
+
+| JavaScript / SQL | Spark |
+|---|---|
+| `.filter()` | `df.filter(col('x') > 5)` |
+| `.map()` | `df.withColumn('new', col('x') * 2)` |
+| `.reduce()` | `df.groupBy('key').agg(sum('val'))` |
+| spread / concat | `a.union(b)` |
+| `console.log` | `df.show()` |
+| `WHERE` | `df.filter()` |
+| `SELECT` | `df.select()` |
+| `GROUP BY` | `df.groupBy().agg()` |
+| `JOIN` | `df.join(other, on='id', how='left')` |
+| `ORDER BY` | `df.orderBy(col('x').desc())` |
+
+**Common gotchas**
+
+- Nothing runs until an action fires — this surprises everyone at first
+- `collect()` pulls all data to the driver — never do this on large datasets
+- Joins are expensive — broadcast small DataFrames with `F.broadcast(small_df)`
+- Repartition before writing to control output file count
+- `inferSchema` reads the whole file to guess types — use explicit schema in prod
 
 ---
 
