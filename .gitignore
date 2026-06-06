@@ -24,6 +24,10 @@
 .DS_Store
 *.pem
 .vscode/settings.json
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
 
 # debug
 npm-debug.log*
