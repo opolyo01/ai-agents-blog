@@ -268,27 +268,27 @@ print(result)
 Constrained prompts produce more consistent output than open-ended ones.
 
 ```python
+import json
+import openai
+from pydantic import BaseModel
+from typing import List
+
+client = openai.OpenAI()  # reads OPENAI_API_KEY from environment
+
 # Bad — vague, many valid interpretations
 bad_prompt = "Analyze this payment and tell me if something looks wrong."
 
-# Good — explicit output contract
-good_prompt = """You are a fraud detection classifier.
-
-Analyze the transaction below and return ONLY a JSON object with these exact fields:
+# Good — system instruction separate from user input
+SYSTEM_PROMPT = """You are a fraud detection classifier.
+Return ONLY a JSON object with these exact fields:
 - fraudulent: boolean
 - confidence: float between 0 and 1
 - flags: list of strings, each max 5 words
 - reason: string, max 15 words
 
-Do not include any explanation, preamble, or text outside the JSON object.
+Do not include any explanation, preamble, or text outside the JSON object."""
 
-Transaction: {transaction}"""
-
-# Verify output structure in your code, not in the prompt
-import json
-from pydantic import BaseModel
-from typing import List
-
+# Verify output structure in your code, not just in the prompt
 class FraudResult(BaseModel):
     fraudulent: bool
     confidence: float
@@ -300,10 +300,18 @@ def classify(transaction: str) -> FraudResult:
         model="gpt-4-turbo-0125",
         temperature=0,
         response_format={"type": "json_object"},
-        messages=[{"role": "user", "content": good_prompt.format(transaction=transaction)}]
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": f"Classify this transaction: {transaction}"}
+        ]
     )
     raw = json.loads(response.choices[0].message.content)
-    return FraudResult(**raw)  # will raise if schema is wrong
+    return FraudResult(**raw)  # will raise ValidationError if schema is wrong
+
+# Usage
+result = classify("$4,200 charge at a gas station, card never used internationally before.")
+print(result)
+# FraudResult(fraudulent=True, confidence=0.87, flags=['unusual amount', 'new location'], reason='High amount at gas station, no travel history')
 ```
 
 ### Level 4 — Architectural
