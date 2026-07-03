@@ -425,9 +425,3 @@ print(f"Consistency: {stats['consistency_rate']:.0%} ({stats['unique_outputs']} 
 ## One Line
 
 > "Temperature controls sampling randomness — set it to zero for consistency, use JSON mode or function calling to constrain output shape, and for truly deterministic decisions like fraud scoring or payment routing, keep the LLM out of the decision path entirely and use it only for explanation."
-
----
-
-Feedback
-
-Working on something similar? Reach out or share your take on [LinkedIn](https://www.linkedin.com/in/opolyakov/).

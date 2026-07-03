@@ -484,9 +484,3 @@ Once you are comfortable with local Spark, the natural progression is:
 5. **SageMaker Pipelines** — orchestrate Spark processing jobs as steps in a larger ML pipeline.
 
 The patterns you learned here carry through all of them.
-
----
-
-Feedback
-
-Working on something similar? Reach out or share your take on [LinkedIn](https://www.linkedin.com/in/opolyakov/).

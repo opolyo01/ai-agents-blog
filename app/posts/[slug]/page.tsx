@@ -71,18 +71,24 @@ export default async function PostPage({ params }: Props) {
       </article>
 
       <section className="mt-10 rounded-3xl border border-gray-200 bg-[linear-gradient(180deg,#fafafa_0%,#ffffff_100%)] px-5 py-5 dark:border-white/10 dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04)_0%,rgba(255,255,255,0.02)_100%)] sm:mt-12 sm:px-6 sm:py-6">
-        <p className="text-sm font-medium uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
-          Feedback
-        </p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p className="text-sm font-medium uppercase tracking-[0.24em] text-gray-500 dark:text-gray-400">
+            Get in touch
+          </p>
+          <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-0.5 text-xs font-medium text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+            Available for consulting
+          </span>
+        </div>
         <p className="mt-3 text-lg leading-8 text-gray-700 dark:text-gray-200">
-          Working on something similar? Reach out or share your take on{" "}
+          I help teams design and ship AI systems, fintech platforms, and trading infrastructure. Working through a hard architecture problem?{" "}
           <a
             href={siteConfig.linkedin}
             target="_blank"
             rel="noreferrer"
             className="font-medium text-[#9a3412] underline decoration-gray-300 underline-offset-4 transition-colors hover:text-[#7c2d12] dark:text-orange-300 dark:decoration-white/20 dark:hover:text-orange-200"
           >
-            LinkedIn
+            Reach out on LinkedIn
           </a>
           .
         </p>

@@ -1,0 +1,133 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 860 585" width="860" height="585" font-family="system-ui, -apple-system, sans-serif">
+
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#64748B"/>
+    </marker>
+    <marker id="arr-d" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#94A3B8"/>
+    </marker>
+    <marker id="arr-p" markerWidth="8" markerHeight="6" refX="7" refY="3" orient="auto">
+      <polygon points="0 0, 8 3, 0 6" fill="#A855F7"/>
+    </marker>
+  </defs>
+
+  <!-- White background -->
+  <rect width="860" height="585" fill="white"/>
+
+  <!-- ── Group: Ingress ── -->
+  <rect x="285" y="12" width="290" height="228" rx="10" fill="#F8FAFC" stroke="#BFDBFE" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="292" y="27" font-size="10" font-weight="700" fill="#93C5FD" letter-spacing="1.5">INGRESS</text>
+
+  <!-- ── Group: Services ── -->
+  <rect x="5" y="278" width="800" height="70" rx="8" fill="#F9FFF9" stroke="#BBF7D0" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="13" y="292" font-size="10" font-weight="700" fill="#86EFAC" letter-spacing="1.5">SERVICES</text>
+
+  <!-- ── Group: Data Layer ── -->
+  <rect x="5" y="390" width="700" height="68" rx="8" fill="#FDFCF0" stroke="#FDE68A" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="13" y="404" font-size="10" font-weight="700" fill="#FCD34D" letter-spacing="1.5">DATA LAYER</text>
+
+  <!-- ── Group: Async Workers ── -->
+  <rect x="180" y="498" width="520" height="70" rx="8" fill="#FDFAFF" stroke="#DDD6FE" stroke-width="1.5" stroke-dasharray="6,3"/>
+  <text x="188" y="513" font-size="10" font-weight="700" fill="#C4B5FD" letter-spacing="1.5">ASYNC WORKERS</text>
+
+  <!-- ═══ ARROWS ═══ -->
+
+  <!-- Ingress chain -->
+  <line x1="430" y1="70" x2="430" y2="108" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="430" y1="150" x2="430" y2="188" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- GW → Redis (dashed) -->
+  <line x1="555" y1="210" x2="628" y2="210" stroke="#94A3B8" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#arr-d)"/>
+
+  <!-- GW → Services (fan-out) -->
+  <line x1="365" y1="230" x2="90"  y2="293" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="415" y1="230" x2="315" y2="293" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="460" y1="230" x2="502" y2="293" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="510" y1="230" x2="700" y2="293" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Payments → Payment Rails (straight down) -->
+  <line x1="75"  y1="335" x2="75"  y2="403" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Payments → Ledger DB -->
+  <line x1="130" y1="318" x2="245" y2="403" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <!-- Payments → Kafka (purple: event path) -->
+  <line x1="145" y1="308" x2="400" y2="403" stroke="#A855F7" stroke-width="1.5" marker-end="url(#arr-p)"/>
+
+  <!-- Invoices + Orgs → OLTP -->
+  <line x1="315" y1="335" x2="575" y2="403" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="502" y1="335" x2="630" y2="403" stroke="#64748B" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Kafka → Async workers (purple) -->
+  <line x1="400" y1="445" x2="263" y2="513" stroke="#A855F7" stroke-width="1.5" marker-end="url(#arr-p)"/>
+  <line x1="422" y1="445" x2="422" y2="513" stroke="#A855F7" stroke-width="1.5" marker-end="url(#arr-p)"/>
+  <line x1="447" y1="445" x2="597" y2="513" stroke="#A855F7" stroke-width="1.5" marker-end="url(#arr-p)"/>
+
+  <!-- ═══ NODES ═══ -->
+
+  <!-- API Clients -->
+  <rect x="340" y="30" width="180" height="40" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="430" y="54" text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">API Clients</text>
+
+  <!-- WAF + ALB -->
+  <rect x="340" y="110" width="180" height="40" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="430" y="134" text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">WAF + ALB</text>
+
+  <!-- API Gateway -->
+  <rect x="305" y="190" width="250" height="40" rx="6" fill="#EFF6FF" stroke="#3B82F6" stroke-width="1.5"/>
+  <text x="430" y="207" text-anchor="middle" font-size="13" font-weight="600" fill="#1E40AF">API Gateway</text>
+  <text x="430" y="221" text-anchor="middle" font-size="10" fill="#3B82F6">authn · rate limits · idempotency</text>
+
+  <!-- Redis -->
+  <rect x="630" y="190" width="170" height="40" rx="6" fill="#FFF1F2" stroke="#F43F5E" stroke-width="1.5"/>
+  <text x="715" y="207" text-anchor="middle" font-size="13" font-weight="600" fill="#9F1239">Redis</text>
+  <text x="715" y="221" text-anchor="middle" font-size="10" fill="#F43F5E">rate limits · idem cache</text>
+
+  <!-- Payments -->
+  <rect x="10" y="295" width="135" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="77" y="319" text-anchor="middle" font-size="13" font-weight="600" fill="#14532D">Payments</text>
+
+  <!-- Invoices / AP-AR -->
+  <rect x="235" y="295" width="160" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="315" y="319" text-anchor="middle" font-size="13" font-weight="600" fill="#14532D">Invoices / AP-AR</text>
+
+  <!-- Orgs & Entitlements -->
+  <rect x="420" y="295" width="165" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="502" y="319" text-anchor="middle" font-size="13" font-weight="600" fill="#14532D">Orgs &amp; Entitlements</text>
+
+  <!-- Webhook Service -->
+  <rect x="620" y="295" width="160" height="40" rx="6" fill="#F0FDF4" stroke="#22C55E" stroke-width="1.5"/>
+  <text x="700" y="319" text-anchor="middle" font-size="13" font-weight="600" fill="#14532D">Webhook Service</text>
+
+  <!-- Payment Rails -->
+  <rect x="10" y="405" width="130" height="40" rx="6" fill="#F8FAFC" stroke="#94A3B8" stroke-width="1.5"/>
+  <text x="75" y="421" text-anchor="middle" font-size="12" font-weight="600" fill="#475569">Payment Rails</text>
+  <text x="75" y="435" text-anchor="middle" font-size="10" fill="#94A3B8">ACH · RTP · wire</text>
+
+  <!-- Ledger DB -->
+  <rect x="175" y="405" width="140" height="40" rx="6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="245" y="421" text-anchor="middle" font-size="13" font-weight="600" fill="#78350F">Ledger DB</text>
+  <text x="245" y="435" text-anchor="middle" font-size="10" fill="#F59E0B">append-only</text>
+
+  <!-- Kafka -->
+  <rect x="350" y="405" width="145" height="40" rx="6" fill="#FAF5FF" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="422" y="421" text-anchor="middle" font-size="13" font-weight="600" fill="#581C87">Kafka</text>
+  <text x="422" y="435" text-anchor="middle" font-size="10" fill="#A855F7">event backbone</text>
+
+  <!-- OLTP Postgres -->
+  <rect x="530" y="405" width="165" height="40" rx="6" fill="#FFFBEB" stroke="#F59E0B" stroke-width="1.5"/>
+  <text x="612" y="421" text-anchor="middle" font-size="13" font-weight="600" fill="#78350F">OLTP Postgres</text>
+  <text x="612" y="435" text-anchor="middle" font-size="10" fill="#F59E0B">invoices · orgs</text>
+
+  <!-- Risk / Fraud -->
+  <rect x="185" y="515" width="130" height="40" rx="6" fill="#FAF5FF" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="250" y="539" text-anchor="middle" font-size="13" font-weight="600" fill="#581C87">Risk / Fraud</text>
+
+  <!-- Reconciliation -->
+  <rect x="345" y="515" width="155" height="40" rx="6" fill="#FAF5FF" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="422" y="539" text-anchor="middle" font-size="13" font-weight="600" fill="#581C87">Reconciliation</text>
+
+  <!-- Analytics sink -->
+  <rect x="530" y="515" width="160" height="40" rx="6" fill="#FAF5FF" stroke="#A855F7" stroke-width="1.5"/>
+  <text x="610" y="539" text-anchor="middle" font-size="13" font-weight="600" fill="#581C87">Analytics sink</text>
+
+</svg>
