@@ -23,16 +23,13 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
-const WELCOME: Message = {
-  id: "welcome",
-  role: "assistant",
-  content:
-    "Hi! I'm Oleg's scheduling assistant. I can help you book a meeting, answer questions about Oleg, or help with cancellations. What can I do for you?",
-  timestamp: new Date(),
-};
+const WELCOME_CONTENT =
+  "Hi! I'm Oleg's scheduling assistant. I can help you book a meeting, answer questions about Oleg, or help with cancellations. What can I do for you?";
 
 export default function BookingChat() {
-  const [messages, setMessages] = useState<Message[]>([WELCOME]);
+  const [messages, setMessages] = useState<Message[]>([
+    { id: "welcome", role: "assistant", content: WELCOME_CONTENT, timestamp: new Date(0) },
+  ]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
@@ -42,6 +39,9 @@ export default function BookingChat() {
 
   useEffect(() => {
     sessionId.current = getSessionId();
+    setMessages((prev) =>
+      prev.map((m) => (m.id === "welcome" ? { ...m, timestamp: new Date() } : m))
+    );
   }, []);
 
   useEffect(() => {
@@ -95,13 +95,17 @@ export default function BookingChat() {
     }
   }, []);
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const doSubmit = useCallback(() => {
     const text = input.trim();
     if (!text || loading) return;
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "38px";
     sendMessage(text);
+  }, [input, loading, sendMessage]);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    doSubmit();
   };
 
   return (
@@ -200,7 +204,7 @@ export default function BookingChat() {
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey) {
               e.preventDefault();
-              handleSubmit(e as unknown as React.FormEvent);
+              doSubmit();
             }
           }}
           placeholder="Type a message… (Shift+Enter for new line)"

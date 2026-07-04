@@ -14,7 +14,7 @@ export default function BookPage() {
         Chat with the scheduling assistant below to find a time that works.
         It can answer questions about my availability, meeting types, and help you confirm a slot.
       </p>
-      <div className="mt-8" style={{ height: "560px" }}>
+      <div className="mt-8" style={{ height: "min(560px, calc(100dvh - 18rem))" }}>
         <BookingChat />
       </div>
     </main>
