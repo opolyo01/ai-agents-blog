@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Markdown from "@/components/Markdown";
 
 interface Message {
   id: string;
@@ -188,19 +189,19 @@ export default function BookingChat() {
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#111] rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-white/10">
       {/* Header */}
-      <div
-        className="px-5 py-4 flex items-center gap-3"
-        style={{ backgroundColor: "var(--accent)" }}
-      >
-        <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-sm">
+      <div className="flex items-center gap-3 border-b border-[var(--accent)]/15 bg-[var(--accent)]/6 px-5 py-4 dark:border-[var(--accent)]/20 dark:bg-[var(--accent)]/10">
+        <div
+          className="flex h-10 w-10 items-center justify-center rounded-full text-sm font-bold text-white"
+          style={{ backgroundColor: "var(--accent)" }}
+        >
           O
         </div>
         <div>
-          <p className="text-white font-semibold text-sm">Oleg Polyakov</p>
-          <p className="text-white/70 text-xs">Scheduling Assistant</p>
+          <p className="text-sm font-semibold text-gray-900 dark:text-gray-100">Oleg Polyakov</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400">Scheduling Assistant</p>
         </div>
         {bookingConfirmed && (
-          <span className="bg-green-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+          <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-700 dark:bg-green-500/15 dark:text-green-300">
             Booked!
           </span>
         )}
@@ -208,7 +209,7 @@ export default function BookingChat() {
           <button
             type="button"
             onClick={handleReset}
-            className="ml-auto text-white/80 hover:text-white text-xs underline underline-offset-2"
+            className="ml-auto text-xs text-[var(--accent)] underline underline-offset-2 hover:opacity-75"
           >
             Start new conversation
           </button>
@@ -234,14 +235,19 @@ export default function BookingChat() {
               )}
               <div className="max-w-[75%]">
                 <div
-                  className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed whitespace-pre-wrap ${
+                  className={`px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
                     isUser
-                      ? "text-white rounded-tr-sm"
+                      ? "whitespace-pre-wrap rounded-tr-sm bg-[var(--accent)]/10 text-[var(--accent)] dark:bg-[var(--accent)]/18"
                       : "bg-gray-100 dark:bg-white/8 text-gray-800 dark:text-gray-200 rounded-tl-sm"
                   }`}
-                  style={isUser ? { backgroundColor: "var(--accent)" } : undefined}
                 >
-                  {msg.content}
+                  {isUser ? (
+                    msg.content
+                  ) : (
+                    <div className="prose prose-sm prose-zinc max-w-none dark:prose-invert prose-p:my-1.5 prose-p:first:mt-0 prose-p:last:mb-0 prose-ul:my-1.5 prose-ol:my-1.5 prose-li:my-0.5 prose-headings:my-2 prose-strong:font-semibold">
+                      <Markdown content={msg.content} />
+                    </div>
+                  )}
                 </div>
                 <p
                   className={`text-xs text-gray-400 dark:text-gray-500 mt-1 ${
