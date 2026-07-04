@@ -167,6 +167,24 @@ export default function BookingChat() {
     doSubmit();
   };
 
+  const handleReset = useCallback(() => {
+    try {
+      localStorage.removeItem(HISTORY_STORAGE_KEY);
+      localStorage.removeItem("booking_session_id");
+    } catch {
+      // localStorage may be unavailable - safe to ignore
+    }
+    sessionId.current = crypto.randomUUID();
+    try {
+      localStorage.setItem("booking_session_id", sessionId.current);
+    } catch {
+      // localStorage may be unavailable - safe to ignore
+    }
+    setMessages([{ id: "welcome", role: "assistant", content: WELCOME_CONTENT, timestamp: new Date() }]);
+    setBookingConfirmed(false);
+    setInput("");
+  }, []);
+
   return (
     <div className="flex flex-col h-full bg-white dark:bg-[#111] rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-white/10">
       {/* Header */}
@@ -182,9 +200,18 @@ export default function BookingChat() {
           <p className="text-white/70 text-xs">Scheduling Assistant</p>
         </div>
         {bookingConfirmed && (
-          <span className="ml-auto bg-green-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
+          <span className="bg-green-400 text-white text-xs px-2 py-0.5 rounded-full font-medium">
             Booked!
           </span>
+        )}
+        {hasUserMessage && (
+          <button
+            type="button"
+            onClick={handleReset}
+            className="ml-auto text-white/80 hover:text-white text-xs underline underline-offset-2"
+          >
+            Start new conversation
+          </button>
         )}
       </div>
 
