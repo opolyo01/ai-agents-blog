@@ -24,9 +24,30 @@ function formatTime(date: Date): string {
 }
 
 const MAX_MESSAGE_LENGTH = 2000;
+const HISTORY_STORAGE_KEY = "booking_chat_history";
 
 const WELCOME_CONTENT =
   "Hi! I'm Oleg's scheduling assistant. I can help you book a meeting, answer questions about Oleg, or help with cancellations. What can I do for you?";
+
+interface StoredState {
+  messages: { id: string; role: "user" | "assistant"; content: string; timestamp: string }[];
+  bookingConfirmed: boolean;
+}
+
+function loadStoredState(): { messages: Message[]; bookingConfirmed: boolean } | null {
+  try {
+    const raw = localStorage.getItem(HISTORY_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw) as StoredState;
+    if (!Array.isArray(parsed.messages) || parsed.messages.length === 0) return null;
+    return {
+      messages: parsed.messages.map((m) => ({ ...m, timestamp: new Date(m.timestamp) })),
+      bookingConfirmed: Boolean(parsed.bookingConfirmed),
+    };
+  } catch {
+    return null;
+  }
+}
 
 export default function BookingChat() {
   const [messages, setMessages] = useState<Message[]>([
@@ -42,9 +63,15 @@ export default function BookingChat() {
 
   useEffect(() => {
     sessionId.current = getSessionId();
-    setMessages((prev) =>
-      prev.map((m) => (m.id === "welcome" ? { ...m, timestamp: new Date() } : m))
-    );
+    const stored = loadStoredState();
+    if (stored) {
+      setMessages(stored.messages);
+      setBookingConfirmed(stored.bookingConfirmed);
+    } else {
+      setMessages((prev) =>
+        prev.map((m) => (m.id === "welcome" ? { ...m, timestamp: new Date() } : m))
+      );
+    }
     fetch("/api/chat")
       .then((res) => setServiceReady(res.ok))
       .catch(() => setServiceReady(false));
@@ -53,6 +80,18 @@ export default function BookingChat() {
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
+
+  useEffect(() => {
+    if (messages.length === 0 || messages[0].timestamp.getTime() === 0) return;
+    try {
+      localStorage.setItem(
+        HISTORY_STORAGE_KEY,
+        JSON.stringify({ messages, bookingConfirmed })
+      );
+    } catch {
+      // localStorage may be unavailable (private browsing quota, etc.) - safe to ignore
+    }
+  }, [messages, bookingConfirmed]);
 
   const sendMessage = useCallback(async (text: string) => {
     const userMsg: Message = {
