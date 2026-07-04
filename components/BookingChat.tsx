@@ -23,6 +23,8 @@ function formatTime(date: Date): string {
   return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
 }
 
+const MAX_MESSAGE_LENGTH = 2000;
+
 const WELCOME_CONTENT =
   "Hi! I'm Oleg's scheduling assistant. I can help you book a meeting, answer questions about Oleg, or help with cancellations. What can I do for you?";
 
@@ -268,6 +270,7 @@ export default function BookingChat() {
               : "Type a message… (Shift+Enter for new line)"
           }
           disabled={isInputDisabled}
+          maxLength={MAX_MESSAGE_LENGTH}
           rows={1}
           className="flex-1 rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 disabled:opacity-50 resize-none overflow-hidden leading-5 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           style={{ minHeight: "38px", maxHeight: "120px" }}
