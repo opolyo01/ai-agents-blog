@@ -6,7 +6,17 @@ export async function GET() {
   if (!BOOKING_BOT_API_URL) {
     return NextResponse.json({ ok: false }, { status: 503 });
   }
-  return NextResponse.json({ ok: true });
+  try {
+    const upstream = await fetch(`${BOOKING_BOT_API_URL}/health`, {
+      signal: AbortSignal.timeout(3000),
+    });
+    if (!upstream.ok) {
+      return NextResponse.json({ ok: false }, { status: 503 });
+    }
+    return NextResponse.json({ ok: true });
+  } catch {
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
 }
 
 export async function POST(req: NextRequest) {
