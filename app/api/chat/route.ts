@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 
 const BOOKING_BOT_API_URL = process.env.BOOKING_BOT_API_URL;
 
+export async function GET() {
+  if (!BOOKING_BOT_API_URL) {
+    return NextResponse.json({ ok: false }, { status: 503 });
+  }
+  return NextResponse.json({ ok: true });
+}
+
 export async function POST(req: NextRequest) {
   if (!BOOKING_BOT_API_URL) {
     return NextResponse.json(

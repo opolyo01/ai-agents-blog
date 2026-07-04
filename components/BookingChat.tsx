@@ -33,6 +33,7 @@ export default function BookingChat() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [bookingConfirmed, setBookingConfirmed] = useState(false);
+  const [serviceReady, setServiceReady] = useState<boolean | null>(null);
   const sessionId = useRef<string | null>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -42,6 +43,9 @@ export default function BookingChat() {
     setMessages((prev) =>
       prev.map((m) => (m.id === "welcome" ? { ...m, timestamp: new Date() } : m))
     );
+    fetch("/api/chat")
+      .then((res) => setServiceReady(res.ok))
+      .catch(() => setServiceReady(false));
   }, []);
 
   useEffect(() => {
@@ -97,11 +101,11 @@ export default function BookingChat() {
 
   const doSubmit = useCallback(() => {
     const text = input.trim();
-    if (!text || loading) return;
+    if (!text || loading || serviceReady === false) return;
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "38px";
     sendMessage(text);
-  }, [input, loading, sendMessage]);
+  }, [input, loading, sendMessage, serviceReady]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -168,6 +172,19 @@ export default function BookingChat() {
             </div>
           );
         })}
+        {serviceReady === false && (
+          <div className="mx-1 mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300">
+            The booking service is currently offline.
+            Please try again later or{" "}
+            <a
+              href="mailto:opolyo01@gmail.com"
+              className="underline underline-offset-2 hover:no-underline"
+            >
+              email me directly
+            </a>
+            .
+          </div>
+        )}
         {loading && (
           <div className="flex justify-start mb-3">
             <div
@@ -208,14 +225,14 @@ export default function BookingChat() {
             }
           }}
           placeholder="Type a message… (Shift+Enter for new line)"
-          disabled={loading}
+          disabled={loading || serviceReady === false}
           rows={1}
           className="flex-1 rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 disabled:opacity-50 resize-none overflow-hidden leading-5 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           style={{ minHeight: "38px", maxHeight: "120px" }}
         />
         <button
           type="submit"
-          disabled={!input.trim() || loading}
+          disabled={!input.trim() || loading || serviceReady === false}
           className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity flex-shrink-0"
           style={{ backgroundColor: "var(--accent)" }}
           aria-label="Send"
