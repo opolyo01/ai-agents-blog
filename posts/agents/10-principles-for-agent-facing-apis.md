@@ -10,6 +10,7 @@ An agent calling the same interface has none of that.
 It pays for every token in the response, it can't answer an interactive prompt, and it can't skim past ten irrelevant fields to find the one it needs.
 
 Below is a model for designing interfaces for that second audience: 10 principles, followed by a concrete benchmark that shows what's at stake when you don't apply them.
+Both come from [Kun Chen's](https://github.com/kunchenguid) [AXI project](https://github.com/kunchenguid/axi), which coined this framing and backed it with a controlled benchmark rather than just a claim.
 
 ## The 10 principles
 
@@ -26,7 +27,7 @@ Below is a model for designing interfaces for that second audience: 10 principle
 
 ## What ignoring this costs: a browser-automation benchmark
 
-The clearest illustration I've seen of why this matters is a benchmark comparing three ways to do the same browser task: "Find designer of Rust, its GitHub stars, and tagline across three sites."
+The clearest illustration I've seen of why this matters is [AXI's](https://github.com/kunchenguid/axi) benchmark comparing three ways to do the same browser task: "Find designer of Rust, its GitHub stars, and tagline across three sites."
 
 - **AXI**: 1 turn, 6,558 tokens, 1.6s. A single `--help | head` style call does the whole task.
 - **CLI (agent-browser)**: 1 turn, 6,501 tokens, 1.6s. Same shape: one command, one response.
