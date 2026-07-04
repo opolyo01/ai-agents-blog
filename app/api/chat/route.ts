@@ -71,11 +71,17 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(body),
+      signal: AbortSignal.timeout(30000),
     });
-  } catch {
+  } catch (err) {
+    const timedOut = err instanceof Error && err.name === "TimeoutError";
     return NextResponse.json(
-      { error: "Could not reach the booking service. Please try again later." },
-      { status: 503 }
+      {
+        error: timedOut
+          ? "The booking service took too long to respond. Please try again."
+          : "Could not reach the booking service. Please try again later.",
+      },
+      { status: timedOut ? 504 : 503 }
     );
   }
 
