@@ -20,6 +20,12 @@ export default function Header() {
           >
             About
           </Link>
+          <Link
+            href="/book"
+            className="rounded-full border border-[var(--accent)]/30 bg-[var(--accent)]/8 px-4 py-2 text-sm font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/15 dark:border-[var(--accent)]/25 dark:bg-[var(--accent)]/12"
+          >
+            Book a Meeting
+          </Link>
         </nav>
       </div>
     </header>
