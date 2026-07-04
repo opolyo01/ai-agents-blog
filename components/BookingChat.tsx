@@ -99,13 +99,27 @@ export default function BookingChat() {
     }
   }, []);
 
+  const isInputDisabled = loading || serviceReady !== true;
+
   const doSubmit = useCallback(() => {
     const text = input.trim();
-    if (!text || loading || serviceReady === false) return;
+    if (!text || loading || serviceReady !== true) return;
     setInput("");
     if (textareaRef.current) textareaRef.current.style.height = "38px";
     sendMessage(text);
   }, [input, loading, sendMessage, serviceReady]);
+
+  const handleSuggestion = useCallback(
+    (text: string) => {
+      if (serviceReady !== true) return;
+      setInput("");
+      sendMessage(text);
+    },
+    [sendMessage, serviceReady]
+  );
+
+  const hasUserMessage = messages.some((m) => m.role === "user");
+  const showSuggestions = !hasUserMessage && serviceReady === true;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -172,6 +186,28 @@ export default function BookingChat() {
             </div>
           );
         })}
+        {showSuggestions && (
+          <div className="flex flex-wrap gap-2 mb-3 mt-1">
+            {[
+              "I'd like to schedule a meeting",
+              "What types of meetings do you offer?",
+              "I need to cancel my booking",
+            ].map((s) => (
+              <button
+                key={s}
+                onClick={() => handleSuggestion(s)}
+                className="rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/8 px-3 py-1.5 text-xs font-medium text-[var(--accent)] transition-colors hover:bg-[var(--accent)]/15 dark:border-[var(--accent)]/30 dark:bg-[var(--accent)]/10"
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        )}
+        {serviceReady === null && (
+          <div className="mx-1 mb-3 rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm text-gray-500 dark:border-white/10 dark:bg-white/5 dark:text-gray-400">
+            Connecting to booking service...
+          </div>
+        )}
         {serviceReady === false && (
           <div className="mx-1 mb-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800 dark:border-amber-700/50 dark:bg-amber-900/20 dark:text-amber-300">
             The booking service is currently offline.
@@ -224,15 +260,21 @@ export default function BookingChat() {
               doSubmit();
             }
           }}
-          placeholder="Type a message… (Shift+Enter for new line)"
-          disabled={loading || serviceReady === false}
+          placeholder={
+            serviceReady === null
+              ? "Connecting…"
+              : serviceReady === false
+              ? "Service offline"
+              : "Type a message… (Shift+Enter for new line)"
+          }
+          disabled={isInputDisabled}
           rows={1}
           className="flex-1 rounded-2xl border border-gray-200 dark:border-white/15 bg-white dark:bg-white/5 text-gray-900 dark:text-gray-100 px-4 py-2 text-sm outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/20 disabled:opacity-50 resize-none overflow-hidden leading-5 placeholder:text-gray-400 dark:placeholder:text-gray-500"
           style={{ minHeight: "38px", maxHeight: "120px" }}
         />
         <button
           type="submit"
-          disabled={!input.trim() || loading || serviceReady === false}
+          disabled={!input.trim() || isInputDisabled}
           className="w-9 h-9 rounded-full flex items-center justify-center text-white hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition-opacity flex-shrink-0"
           style={{ backgroundColor: "var(--accent)" }}
           aria-label="Send"
