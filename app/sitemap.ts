@@ -17,6 +17,10 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${siteConfig.url}/about`,
       lastModified: new Date().toISOString(),
     },
+    {
+      url: `${siteConfig.url}/book`,
+      lastModified: new Date().toISOString(),
+    },
     ...posts,
   ];
 }

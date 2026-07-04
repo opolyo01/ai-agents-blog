@@ -27,7 +27,12 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const body = await req.json();
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid request body." }, { status: 400 });
+  }
 
   let upstream: Response;
   try {
@@ -43,6 +48,13 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const data = await upstream.json();
-  return NextResponse.json(data, { status: upstream.status });
+  try {
+    const data = await upstream.json();
+    return NextResponse.json(data, { status: upstream.status });
+  } catch {
+    return NextResponse.json(
+      { error: "The booking service returned an unexpected response. Please try again later." },
+      { status: 502 }
+    );
+  }
 }
